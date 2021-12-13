@@ -140,15 +140,21 @@ func createNewUser(c echo.Context) error {
 	account := c.FormValue("account")
 	phoneNumber := c.FormValue("phone_number")
 
+	log.Printf("Create new user: id: %d, full_name: %s, account: %s, phone_number: %s", id, fullName, account, phoneNumber)
+
 	tx, _ := dbConnect.Begin()
 
 	stmt, _ := tx.Prepare("INSERT INTO users (id, full_name, account, phone_number) VALUES (?, ?, ?, ?)")
-	// defer stmt.Close()
+	defer stmt.Close()
 
 	if _, err := stmt.Exec(
 		id, fullName,
 		account, phoneNumber,
 	); err != nil {
+		log.Fatal(err)
+	}
+
+	if err = tx.Commit(); err != nil {
 		log.Fatal(err)
 	}
 
